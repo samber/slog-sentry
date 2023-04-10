@@ -19,6 +19,8 @@ A [Sentry](https://sentry.io) Handler for [slog](https://pkg.go.dev/golang.org/x
 - [slog-logstach](https://github.com/samber/slog-logstach): A `slog` handler for `Logstach`
 - [slog-slack](https://github.com/samber/slog-slack): A `slog` handler for `Slack`
 - [slog-loki](https://github.com/samber/slog-loki): A `slog` handler for `Loki`
+- [slog-fluentd](https://github.com/samber/slog-fluentd): A `slog` handler for `Fluentd`
+- [slog-syslog](https://github.com/samber/slog-syslog): A `slog` handler for `Syslog`
 
 ## 🚀 Install
 
