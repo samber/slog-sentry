@@ -16,7 +16,7 @@ type Converter func(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub
 func DefaultConverter(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event {
 	event := sentry.NewEvent()
 
-	event.Timestamp = record.Time
+	event.Timestamp = record.Time.UTC()
 	event.Level = levelMap[record.Level]
 	event.Message = record.Message
 	event.Logger = "samber/slog-sentry"
