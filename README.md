@@ -12,6 +12,14 @@
 
 A [Sentry](https://sentry.io) Handler for [slog](https://pkg.go.dev/golang.org/x/exp/slog) Go library.
 
+**See also:**
+
+- [slog-multi](https://github.com/samber/slog-multi): workflows of `slog` handlers (pipeline, fanout)
+- [slog-datadog](https://github.com/samber/slog-datadog): A `slog` handler for `Datadog`
+- [slog-logstach](https://github.com/samber/slog-logstach): A `slog` handler for `Logstach`
+- [slog-slack](https://github.com/samber/slog-slack): A `slog` handler for `Slack`
+- [slog-loki](https://github.com/samber/slog-loki): A `slog` handler for `Loki`
+
 ## 🚀 Install
 
 ```sh
