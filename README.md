@@ -22,6 +22,7 @@ A [Sentry](https://sentry.io) Handler for [slog](https://pkg.go.dev/golang.org/x
 - [slog-loki](https://github.com/samber/slog-loki): A `slog` handler for `Loki`
 - [slog-fluentd](https://github.com/samber/slog-fluentd): A `slog` handler for `Fluentd`
 - [slog-syslog](https://github.com/samber/slog-syslog): A `slog` handler for `Syslog`
+- [slog-graylog](https://github.com/samber/slog-graylog): A `slog` handler for `Graylog`
 
 ## 🚀 Install
 
