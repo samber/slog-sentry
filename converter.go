@@ -25,8 +25,9 @@ func DefaultConverter(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.H
 		attrToSentryEvent(loggerAttr[i], event)
 	}
 
-	record.Attrs(func(attr slog.Attr) {
+	record.Attrs(func(attr slog.Attr) bool {
 		attrToSentryEvent(attr, event)
+		return true
 	})
 
 	return event
