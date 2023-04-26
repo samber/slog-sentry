@@ -2,8 +2,6 @@ package slogsentry
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/getsentry/sentry-go"
 	"golang.org/x/exp/slog"
@@ -57,8 +55,6 @@ func (h *SentryHandler) Handle(ctx context.Context, record slog.Record) error {
 	event := converter(h.attrs, &record, hub)
 	hub.CaptureEvent(event)
 
-	str, _ := json.Marshal(event)
-	fmt.Println(string(str))
 	return nil
 }
 
