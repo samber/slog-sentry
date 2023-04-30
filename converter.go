@@ -150,7 +150,7 @@ func attrToMap(attrs []slog.Attr) map[string]any {
 		case slog.KindDuration:
 			output[k] = v.Duration()
 		case slog.KindTime:
-			output[k] = v.Time()
+			output[k] = v.Time().UTC()
 		default:
 			output[k] = anyValueToString(v)
 		}
@@ -189,7 +189,7 @@ func valueToString(v slog.Value) string {
 	case slog.KindDuration:
 		return v.Duration().String()
 	case slog.KindTime:
-		return v.Time().String()
+		return v.Time().UTC().String()
 	default:
 		return anyValueToString(v)
 	}
