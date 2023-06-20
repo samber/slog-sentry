@@ -1,10 +1,11 @@
 package slogsentry
 
 import (
+	"github.com/samber/lo"
 	"golang.org/x/exp/slog"
 )
 
-func appendAttrsToGroup(groups []string, actualAttrs, newAttrs []slog.Attr) []slog.Attr {
+func appendAttrsToGroup(groups []string, actualAttrs []slog.Attr, newAttrs []slog.Attr) []slog.Attr {
 	if len(groups) == 0 {
 		return uniqAttrs(append(actualAttrs, newAttrs...))
 	}
@@ -12,7 +13,7 @@ func appendAttrsToGroup(groups []string, actualAttrs, newAttrs []slog.Attr) []sl
 	for i := range actualAttrs {
 		attr := actualAttrs[i]
 		if attr.Key == groups[0] && attr.Value.Kind() == slog.KindGroup {
-			actualAttrs[i] = slog.Group(groups[0], attrsToAnys(appendAttrsToGroup(groups[1:], attr.Value.Group(), newAttrs))...)
+			actualAttrs[i] = slog.Group(groups[0], lo.ToAnySlice(appendAttrsToGroup(groups[1:], attr.Value.Group(), newAttrs))...)
 			return actualAttrs
 		}
 	}
@@ -22,18 +23,10 @@ func appendAttrsToGroup(groups []string, actualAttrs, newAttrs []slog.Attr) []sl
 			actualAttrs,
 			slog.Group(
 				groups[0],
-				attrsToAnys(appendAttrsToGroup(groups[1:], []slog.Attr{}, newAttrs))...,
+				lo.ToAnySlice(appendAttrsToGroup(groups[1:], []slog.Attr{}, newAttrs))...,
 			),
 		),
 	)
-}
-
-func attrsToAnys(as []slog.Attr) []any {
-	s := make([]any, len(as))
-	for i, a := range as {
-		s[i] = a
-	}
-	return s
 }
 
 func uniqAttrs(attrs []slog.Attr) []slog.Attr {
