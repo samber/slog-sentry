@@ -3,8 +3,9 @@ package slogsentry
 import (
 	"context"
 
+	"log/slog"
+
 	"github.com/getsentry/sentry-go"
-	"golang.org/x/exp/slog"
 )
 
 type Option struct {

@@ -7,8 +7,9 @@ import (
 	"reflect"
 	"strconv"
 
+	"log/slog"
+
 	"github.com/getsentry/sentry-go"
-	"golang.org/x/exp/slog"
 )
 
 type Converter func(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event

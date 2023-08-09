@@ -1,8 +1,9 @@
 package slogsentry
 
 import (
+	"log/slog"
+
 	"github.com/samber/lo"
-	"golang.org/x/exp/slog"
 )
 
 func appendAttrsToGroup(groups []string, actualAttrs []slog.Attr, newAttrs []slog.Attr) []slog.Attr {

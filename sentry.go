@@ -1,8 +1,9 @@
 package slogsentry
 
 import (
+	"log/slog"
+
 	"github.com/getsentry/sentry-go"
-	"golang.org/x/exp/slog"
 )
 
 var levelMap = map[slog.Level]sentry.Level{

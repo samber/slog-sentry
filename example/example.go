@@ -5,9 +5,10 @@ import (
 	"log"
 	"time"
 
+	"log/slog"
+
 	"github.com/getsentry/sentry-go"
 	slogsentry "github.com/samber/slog-sentry"
-	"golang.org/x/exp/slog"
 )
 
 func main() {
