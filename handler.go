@@ -30,6 +30,8 @@ func (o Option) NewSentryHandler() slog.Handler {
 	}
 }
 
+var _ slog.Handler = (*SentryHandler)(nil)
+
 type SentryHandler struct {
 	option Option
 	attrs  []slog.Attr
