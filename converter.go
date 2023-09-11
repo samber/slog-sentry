@@ -79,7 +79,7 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 		}
 
 		event.User.Data = data
-	} else if attr.Key == "error" && kind == slog.KindAny {
+	} else if (attr.Key == "error" || attr.Key == "err") && kind == slog.KindAny {
 		if err, ok := attr.Value.Any().(error); ok {
 			event.Exception = buildExceptions(err)
 		} else {
