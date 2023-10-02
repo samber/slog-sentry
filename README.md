@@ -67,6 +67,13 @@ type Option struct {
 }
 ```
 
+Change `context` default key:
+
+```go
+// (default: "extra")
+slogsentry.ContextKey = "other"
+```
+
 ### Supported attributes
 
 The following attributes are interpreted by `slogsentry.DefaultConverter`:
@@ -86,7 +93,7 @@ The following attributes are interpreted by `slogsentry.DefaultConverter`:
 | "request"        | any               | `*http.Request` |
 | other attributes | *                 |                 |
 
-Other attributes will be injected in `extra` Sentry field.
+Other attributes will be injected in `context` Sentry field.
 
 Users and tags must be of type `slog.Group`. Eg:
 
@@ -98,7 +105,7 @@ slog.Group("user",
 )
 ```
 
-The Sentry agent is responsible for collecting `context` and `modules`.
+The Sentry agent is responsible for collecting `modules`.
 
 ### Example
 

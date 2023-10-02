@@ -12,6 +12,8 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
+const ContextKey = "extra"
+
 type Converter func(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event
 
 func DefaultConverter(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event {
@@ -97,10 +99,10 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 		event.Contexts[attr.Key] = attrToMap(attr.Value.Group())
 	} else {
 		// "context" should not be added to underlying context layers (see slog.KindGroup case).
-		if _, ok := event.Contexts["context"]; !ok {
-			event.Contexts["context"] = make(map[string]any, 0)
+		if _, ok := event.Contexts[ContextKey]; !ok {
+			event.Contexts[ContextKey] = make(map[string]any, 0)
 		}
-		event.Contexts["context"][attr.Key] = attr.Value.Any()
+		event.Contexts[ContextKey][attr.Key] = attr.Value.Any()
 	}
 }
 
