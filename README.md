@@ -62,18 +62,18 @@ type Option struct {
     // sentry hub (default: current hub)
     Hub       *sentry.Hub
 
-    // optional: error attribute name (default: "error")
-    ErrorKey string
     // optional: customize Sentry event builder
     Converter Converter
 }
 ```
 
-Change `context` default key:
+Other global parameters:
 
 ```go
-// (default: "extra")
+// default: "extra"
 slogsentry.ContextKey = "other"
+// default: "error"
+slogsentry.ErrorKey = "error"
 ```
 
 ### Supported attributes

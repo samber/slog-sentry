@@ -13,10 +13,11 @@ import (
 )
 
 var ContextKey = "extra"
+var ErrorKey = "extra"
 
-type Converter func(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub, errorKey string) *sentry.Event
+type Converter func(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event
 
-func DefaultConverter(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub, errorKey string) *sentry.Event {
+func DefaultConverter(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event {
 	event := sentry.NewEvent()
 
 	event.Timestamp = record.Time.UTC()
@@ -25,18 +26,18 @@ func DefaultConverter(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.H
 	event.Logger = "samber/slog-sentry"
 
 	for i := range loggerAttr {
-		attrToSentryEvent(loggerAttr[i], event, errorKey)
+		attrToSentryEvent(loggerAttr[i], event)
 	}
 
 	record.Attrs(func(attr slog.Attr) bool {
-		attrToSentryEvent(attr, event, errorKey)
+		attrToSentryEvent(attr, event)
 		return true
 	})
 
 	return event
 }
 
-func attrToSentryEvent(attr slog.Attr, event *sentry.Event, errorKey string) {
+func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 	k := attr.Key
 	v := attr.Value
 	kind := attr.Value.Kind()
@@ -81,7 +82,7 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event, errorKey string) {
 		}
 
 		event.User.Data = data
-	} else if (attr.Key == "error" || attr.Key == "err" || attr.Key == errorKey) && kind == slog.KindAny {
+	} else if (attr.Key == "error" || attr.Key == "err" || attr.Key == ErrorKey) && kind == slog.KindAny {
 		if err, ok := attr.Value.Any().(error); ok {
 			event.Exception = buildExceptions(err)
 		} else {
