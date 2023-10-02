@@ -12,7 +12,7 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
-const ContextKey = "extra"
+var ContextKey = "extra"
 
 type Converter func(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event
 
