@@ -58,14 +58,14 @@ GoDoc: [https://pkg.go.dev/github.com/samber/slog-sentry](https://pkg.go.dev/git
 ```go
 type Option struct {
     // log level (default: debug)
-	Level     slog.Leveler
+    Level     slog.Leveler
     // sentry hub (default: current hub)
-	Hub       *sentry.Hub
+    Hub       *sentry.Hub
 
-	// optional: error attribute name (default: "error")
-	ErrorKey string
+    // optional: error attribute name (default: "error")
+    ErrorKey string
     // optional: customize Sentry event builder
-	Converter Converter
+    Converter Converter
 }
 ```
 
