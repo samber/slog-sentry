@@ -62,6 +62,8 @@ type Option struct {
     // sentry hub (default: current hub)
 	Hub       *sentry.Hub
 
+	// optional: error attribute name (default: "error")
+	ErrorKey string
     // optional: customize Sentry event builder
 	Converter Converter
 }

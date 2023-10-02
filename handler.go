@@ -14,6 +14,8 @@ type Option struct {
 	// sentry hub (default: current hub)
 	Hub *sentry.Hub
 
+	// optional: error attribute name (default: "error")
+	ErrorKey string
 	// optional: customize Sentry event builder
 	Converter Converter
 }
@@ -21,6 +23,10 @@ type Option struct {
 func (o Option) NewSentryHandler() slog.Handler {
 	if o.Level == nil {
 		o.Level = slog.LevelDebug
+	}
+
+	if o.ErrorKey == "" {
+		o.ErrorKey = "error"
 	}
 
 	return &SentryHandler{
@@ -55,7 +61,7 @@ func (h *SentryHandler) Handle(ctx context.Context, record slog.Record) error {
 		hub = h.option.Hub
 	}
 
-	event := converter(h.attrs, &record, hub)
+	event := converter(h.attrs, &record, hub, h.option.ErrorKey)
 	hub.CaptureEvent(event)
 
 	return nil
