@@ -94,9 +94,13 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 			event.User.Data["request"] = anyValueToString(v)
 		}
 	} else if kind == slog.KindGroup {
-		event.Extra[attr.Key] = attrToMap(attr.Value.Group())
+		event.Contexts[attr.Key] = attrToMap(attr.Value.Group())
 	} else {
-		event.Extra[attr.Key] = attr.Value.Any()
+		// "context" should not be added to underlying context layers (see slog.KindGroup case).
+		if _, ok := event.Contexts["context"]; !ok {
+			event.Contexts["context"] = map[string]any{}
+		}
+		event.Contexts["context"][attr.Key] = attr.Value.Any()
 	}
 }
 
