@@ -13,7 +13,7 @@ import (
 )
 
 var ContextKey = "extra"
-var ErrorKey = "extra"
+var ErrorKey = "error"
 
 type Converter func(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event
 
