@@ -1,38 +1,42 @@
 package slogsentry
 
 import (
-	"encoding"
-	"fmt"
 	"net/http"
 	"reflect"
-	"strconv"
 
 	"log/slog"
 
 	"github.com/getsentry/sentry-go"
+	slogcommon "github.com/samber/slog-common"
 )
 
+var SourceKey = "source"
 var ContextKey = "extra"
-var ErrorKey = "error"
+var ErrorKeys = []string{"error", "err"}
 
-type Converter func(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event
+type Converter func(addSource bool, replaceAttr func(groups []string, a slog.Attr) slog.Attr, loggerAttr []slog.Attr, groups []string, record *slog.Record, hub *sentry.Hub) *sentry.Event
 
-func DefaultConverter(loggerAttr []slog.Attr, record *slog.Record, hub *sentry.Hub) *sentry.Event {
+func DefaultConverter(addSource bool, replaceAttr func(groups []string, a slog.Attr) slog.Attr, loggerAttr []slog.Attr, groups []string, record *slog.Record, hub *sentry.Hub) *sentry.Event {
+	// aggregate all attributes
+	attrs := slogcommon.AppendRecordAttrsToAttrs(loggerAttr, groups, record)
+
+	// developer formatters
+	attrs = slogcommon.ReplaceError(attrs, ErrorKeys...)
+	if addSource {
+		attrs = append(attrs, slogcommon.Source(SourceKey, record))
+	}
+	attrs = slogcommon.ReplaceAttrs(replaceAttr, []string{}, attrs...)
+
+	// handler formatter
 	event := sentry.NewEvent()
-
 	event.Timestamp = record.Time.UTC()
 	event.Level = levelMap[record.Level]
 	event.Message = record.Message
-	event.Logger = "samber/slog-sentry"
+	event.Logger = name
 
-	for i := range loggerAttr {
-		attrToSentryEvent(loggerAttr[i], event)
+	for i := range attrs {
+		attrToSentryEvent(attrs[i], event)
 	}
-
-	record.Attrs(func(attr slog.Attr) bool {
-		attrToSentryEvent(attr, event)
-		return true
-	})
 
 	return event
 }
@@ -41,6 +45,16 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 	k := attr.Key
 	v := attr.Value
 	kind := attr.Value.Kind()
+
+	for _, errorKey := range ErrorKeys {
+		if attr.Key == errorKey {
+			if err, ok := attr.Value.Any().(error); ok {
+				event.Exception = buildExceptions(err)
+			} else {
+				event.User.Data[errorKey] = slogcommon.AnyValueToString(v)
+			}
+		}
+	}
 
 	if k == "dist" && kind == slog.KindString {
 		event.Dist = v.String()
@@ -55,11 +69,11 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 	} else if k == "server_name" && kind == slog.KindString {
 		event.ServerName = v.String()
 	} else if attr.Key == "tags" && kind == slog.KindGroup {
-		event.Tags = attrToStringMap(v.Group())
+		event.Tags = slogcommon.AttrsToString(v.Group()...)
 	} else if attr.Key == "transaction" && kind == slog.KindGroup {
 		event.Transaction = v.String()
 	} else if attr.Key == "user" && kind == slog.KindGroup {
-		data := attrToStringMap(v.Group())
+		data := slogcommon.AttrsToString(v.Group()...)
 
 		if id, ok := data["id"]; ok {
 			event.User.ID = id
@@ -82,22 +96,16 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 		}
 
 		event.User.Data = data
-	} else if (attr.Key == "error" || attr.Key == "err" || attr.Key == ErrorKey) && kind == slog.KindAny {
-		if err, ok := attr.Value.Any().(error); ok {
-			event.Exception = buildExceptions(err)
-		} else {
-			event.User.Data["error"] = anyValueToString(v)
-		}
 	} else if attr.Key == "request" && kind == slog.KindAny {
 		if req, ok := attr.Value.Any().(http.Request); ok {
 			event.Request = sentry.NewRequest(&req)
 		} else if req, ok := attr.Value.Any().(*http.Request); ok {
 			event.Request = sentry.NewRequest(req)
 		} else {
-			event.User.Data["request"] = anyValueToString(v)
+			event.User.Data["request"] = slogcommon.AnyValueToString(v)
 		}
 	} else if kind == slog.KindGroup {
-		event.Contexts[attr.Key] = attrToMap(attr.Value.Group())
+		event.Contexts[attr.Key] = slogcommon.AttrsToMap(attr.Value.Group()...)
 	} else {
 		// "context" should not be added to underlying context layers (see slog.KindGroup case).
 		if _, ok := event.Contexts[ContextKey]; !ok {
@@ -128,90 +136,4 @@ func buildExceptions(err error) []sentry.Exception {
 	}
 
 	return exceptions
-}
-
-func attrToMap(attrs []slog.Attr) map[string]any {
-	output := map[string]any{}
-	for i := range attrs {
-		attr := attrs[i]
-		k := attr.Key
-		v := attr.Value
-		kind := attr.Value.Kind()
-
-		switch kind {
-		case slog.KindAny:
-			output[k] = anyValueToString(v)
-		case slog.KindLogValuer:
-			output[k] = anyValueToString(v)
-		case slog.KindGroup:
-			output[k] = attrToMap(v.Group())
-		case slog.KindInt64:
-			output[k] = v.Int64()
-		case slog.KindUint64:
-			output[k] = v.Uint64()
-		case slog.KindFloat64:
-			output[k] = v.Float64()
-		case slog.KindString:
-			output[k] = v.String()
-		case slog.KindBool:
-			output[k] = v.Bool()
-		case slog.KindDuration:
-			output[k] = v.Duration()
-		case slog.KindTime:
-			output[k] = v.Time().UTC()
-		default:
-			output[k] = anyValueToString(v)
-		}
-	}
-	return output
-}
-
-func attrToStringMap(attrs []slog.Attr) map[string]string {
-	output := map[string]string{}
-	for i := range attrs {
-		attr := attrs[i]
-		k, v := attr.Key, attr.Value
-		output[k] = valueToString(v)
-	}
-	return output
-}
-
-func valueToString(v slog.Value) string {
-	switch v.Kind() {
-	case slog.KindAny:
-		return anyValueToString(v)
-	case slog.KindLogValuer:
-		return anyValueToString(v)
-	case slog.KindGroup:
-		return fmt.Sprint(v)
-	case slog.KindInt64:
-		return fmt.Sprintf("%d", v.Int64())
-	case slog.KindUint64:
-		return fmt.Sprintf("%d", v.Uint64())
-	case slog.KindFloat64:
-		return fmt.Sprintf("%f", v.Float64())
-	case slog.KindString:
-		return v.String()
-	case slog.KindBool:
-		return strconv.FormatBool(v.Bool())
-	case slog.KindDuration:
-		return v.Duration().String()
-	case slog.KindTime:
-		return v.Time().UTC().String()
-	default:
-		return anyValueToString(v)
-	}
-}
-
-func anyValueToString(v slog.Value) string {
-	if tm, ok := v.Any().(encoding.TextMarshaler); ok {
-		data, err := tm.MarshalText()
-		if err != nil {
-			return ""
-		}
-
-		return string(data)
-	}
-
-	return fmt.Sprintf("%+v", v.Any())
 }

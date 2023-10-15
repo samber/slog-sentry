@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/getsentry/sentry-go"
+	slogcommon "github.com/samber/slog-common"
 )
 
 type Option struct {
@@ -16,6 +17,10 @@ type Option struct {
 
 	// optional: customize Sentry event builder
 	Converter Converter
+
+	// optional: see slog.HandlerOptions
+	AddSource   bool
+	ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
 }
 
 func (o Option) NewSentryHandler() slog.Handler {
@@ -55,7 +60,7 @@ func (h *SentryHandler) Handle(ctx context.Context, record slog.Record) error {
 		hub = h.option.Hub
 	}
 
-	event := converter(h.attrs, &record, hub)
+	event := converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record, hub)
 	hub.CaptureEvent(event)
 
 	return nil
@@ -64,7 +69,7 @@ func (h *SentryHandler) Handle(ctx context.Context, record slog.Record) error {
 func (h *SentryHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &SentryHandler{
 		option: h.option,
-		attrs:  appendAttrsToGroup(h.groups, h.attrs, attrs),
+		attrs:  slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
 		groups: h.groups,
 	}
 }

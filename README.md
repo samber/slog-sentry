@@ -64,16 +64,19 @@ type Option struct {
 
     // optional: customize Sentry event builder
     Converter Converter
+
+	// optional: see slog.HandlerOptions
+	AddSource   bool
+	ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
 }
 ```
 
 Other global parameters:
 
 ```go
-// default: "extra"
-slogsentry.ContextKey = "other"
-// default: "error"
-slogsentry.ErrorKey = "error"
+slogsentry.SourceKey = "source"
+slogsentry.ContextKey = "extra"
+slogsentry.ErrorKeys = []string{"error", "err"}
 ```
 
 ### Supported attributes
