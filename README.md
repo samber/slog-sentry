@@ -65,9 +65,9 @@ type Option struct {
     // optional: customize Sentry event builder
     Converter Converter
 
-	// optional: see slog.HandlerOptions
-	AddSource   bool
-	ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
+    // optional: see slog.HandlerOptions
+    AddSource   bool
+    ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
 }
 ```
 
@@ -116,9 +116,9 @@ The Sentry agent is responsible for collecting `modules`.
 
 ```go
 import (
-	"github.com/getsentry/sentry-go"
-	slogsentry "github.com/samber/slog-sentry"
-	"log/slog"
+    "github.com/getsentry/sentry-go"
+    slogsentry "github.com/samber/slog-sentry"
+    "log/slog"
 )
 
 func main() {
