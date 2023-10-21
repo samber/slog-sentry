@@ -1,4 +1,4 @@
-module github.com/samber/slog-sentry
+module github.com/samber/slog-sentry/v2
 
 go 1.21
 

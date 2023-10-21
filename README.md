@@ -43,16 +43,16 @@ A [Sentry](https://sentry.io) Handler for [slog](https://pkg.go.dev/log/slog) Go
 ## 🚀 Install
 
 ```sh
-go get github.com/samber/slog-sentry
+go get github.com/samber/slog-sentry/v2
 ```
 
 **Compatibility**: go >= 1.21
 
-No breaking changes will be made to exported APIs before v2.0.0.
+No breaking changes will be made to exported APIs before v3.0.0.
 
 ## 💡 Usage
 
-GoDoc: [https://pkg.go.dev/github.com/samber/slog-sentry](https://pkg.go.dev/github.com/samber/slog-sentry)
+GoDoc: [https://pkg.go.dev/github.com/samber/slog-sentry/v2](https://pkg.go.dev/github.com/samber/slog-sentry/v2)
 
 ### Handler options
 
@@ -118,7 +118,7 @@ The Sentry agent is responsible for collecting `modules`.
 ```go
 import (
     "github.com/getsentry/sentry-go"
-    slogsentry "github.com/samber/slog-sentry"
+    slogsentry "github.com/samber/slog-sentry/v2"
     "log/slog"
 )
 
