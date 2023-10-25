@@ -30,7 +30,7 @@ func DefaultConverter(addSource bool, replaceAttr func(groups []string, a slog.A
 	// handler formatter
 	event := sentry.NewEvent()
 	event.Timestamp = record.Time.UTC()
-	event.Level = levelMap[record.Level]
+	event.Level = LogLevels[record.Level]
 	event.Message = record.Message
 	event.Logger = name
 

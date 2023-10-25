@@ -78,6 +78,7 @@ Other global parameters:
 slogsentry.SourceKey = "source"
 slogsentry.ContextKey = "extra"
 slogsentry.ErrorKeys = []string{"error", "err"}
+slogsentry.LogLevels = map[slog.Level]sentry.Level{...}
 ```
 
 ### Supported attributes
