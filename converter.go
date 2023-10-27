@@ -51,6 +51,9 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 			if err, ok := attr.Value.Any().(error); ok {
 				event.Exception = buildExceptions(err)
 			} else {
+				if event.User.Data == nil {
+					event.User.Data = map[string]string{}
+				}
 				event.User.Data[errorKey] = slogcommon.AnyValueToString(v)
 			}
 		}
