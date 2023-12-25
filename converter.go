@@ -2,7 +2,6 @@ package slogsentry
 
 import (
 	"net/http"
-	"reflect"
 
 	"log/slog"
 
@@ -21,11 +20,12 @@ func DefaultConverter(addSource bool, replaceAttr func(groups []string, a slog.A
 	attrs := slogcommon.AppendRecordAttrsToAttrs(loggerAttr, groups, record)
 
 	// developer formatters
-	attrs = slogcommon.ReplaceError(attrs, ErrorKeys...)
 	if addSource {
 		attrs = append(attrs, slogcommon.Source(SourceKey, record))
 	}
 	attrs = slogcommon.ReplaceAttrs(replaceAttr, []string{}, attrs...)
+	// Removes err attribute from `attrs`
+	attrs, err := slogcommon.ExtractError(attrs, ErrorKeys...)
 
 	// handler formatter
 	event := sentry.NewEvent()
@@ -33,6 +33,7 @@ func DefaultConverter(addSource bool, replaceAttr func(groups []string, a slog.A
 	event.Level = LogLevels[record.Level]
 	event.Message = record.Message
 	event.Logger = name
+	event.SetException(err, 10)
 
 	for i := range attrs {
 		attrToSentryEvent(attrs[i], event)
@@ -45,19 +46,6 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 	k := attr.Key
 	v := attr.Value
 	kind := attr.Value.Kind()
-
-	for _, errorKey := range ErrorKeys {
-		if attr.Key == errorKey {
-			if err, ok := attr.Value.Any().(error); ok {
-				event.Exception = buildExceptions(err)
-			} else {
-				if event.User.Data == nil {
-					event.User.Data = map[string]string{}
-				}
-				event.User.Data[errorKey] = slogcommon.AnyValueToString(v)
-			}
-		}
-	}
 
 	if k == "dist" && kind == slog.KindString {
 		event.Dist = v.String()
@@ -116,27 +104,4 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 		}
 		event.Contexts[ContextKey][attr.Key] = attr.Value.Any()
 	}
-}
-
-func buildExceptions(err error) []sentry.Exception {
-	exceptions := []sentry.Exception{}
-
-	for i := 0; i < 10 && err != nil; i++ {
-		exceptions = append(exceptions, sentry.Exception{
-			Value:      err.Error(),
-			Type:       reflect.TypeOf(err).String(),
-			Stacktrace: sentry.ExtractStacktrace(err), // @TODO: use record.pc
-		})
-
-		switch previous := err.(type) {
-		case interface{ Unwrap() error }:
-			err = previous.Unwrap()
-		case interface{ Cause() error }:
-			err = previous.Cause()
-		default:
-			err = nil
-		}
-	}
-
-	return exceptions
 }
