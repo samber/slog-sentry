@@ -28,6 +28,10 @@ func (o Option) NewSentryHandler() slog.Handler {
 		o.Level = slog.LevelDebug
 	}
 
+	if o.Converter == nil {
+		o.Converter = DefaultConverter
+	}
+
 	return &SentryHandler{
 		option: o,
 		attrs:  []slog.Attr{},
@@ -48,11 +52,6 @@ func (h *SentryHandler) Enabled(_ context.Context, level slog.Level) bool {
 }
 
 func (h *SentryHandler) Handle(ctx context.Context, record slog.Record) error {
-	converter := DefaultConverter
-	if h.option.Converter != nil {
-		converter = h.option.Converter
-	}
-
 	hub := sentry.CurrentHub()
 	if hubFromContext := sentry.GetHubFromContext(ctx); hubFromContext != nil {
 		hub = hubFromContext
@@ -60,7 +59,7 @@ func (h *SentryHandler) Handle(ctx context.Context, record slog.Record) error {
 		hub = h.option.Hub
 	}
 
-	event := converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record, hub)
+	event := h.option.Converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record, hub)
 	hub.CaptureEvent(event)
 
 	return nil
