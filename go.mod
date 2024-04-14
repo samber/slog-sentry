@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/getsentry/sentry-go v0.22.0
-	github.com/samber/slog-common v0.15.0
+	github.com/samber/slog-common v0.15.1
 	go.uber.org/goleak v1.2.1
 )
 
