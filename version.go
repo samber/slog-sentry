@@ -3,4 +3,4 @@ package slogsentry
 const name = "samber/slog-sentry"
 
 // nolint
-const version = "VERSION" // replaced by .github/workflows/release.yml
+const version = "v2.5.0" // replaced by .github/workflows/release.yml
