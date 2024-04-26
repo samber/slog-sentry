@@ -17,6 +17,8 @@ type Option struct {
 
 	// optional: customize Sentry event builder
 	Converter Converter
+	// optional: fetch attributes from context
+	AttrFromContext []func(ctx context.Context) []slog.Attr
 
 	// optional: see slog.HandlerOptions
 	AddSource   bool
@@ -30,6 +32,10 @@ func (o Option) NewSentryHandler() slog.Handler {
 
 	if o.Converter == nil {
 		o.Converter = DefaultConverter
+	}
+
+	if o.AttrFromContext == nil {
+		o.AttrFromContext = []func(ctx context.Context) []slog.Attr{}
 	}
 
 	return &SentryHandler{
@@ -59,7 +65,8 @@ func (h *SentryHandler) Handle(ctx context.Context, record slog.Record) error {
 		hub = h.option.Hub
 	}
 
-	event := h.option.Converter(h.option.AddSource, h.option.ReplaceAttr, h.attrs, h.groups, &record, hub)
+	fromContext := slogcommon.ContextExtractor(ctx, h.option.AttrFromContext)
+	event := h.option.Converter(h.option.AddSource, h.option.ReplaceAttr, append(h.attrs, fromContext...), h.groups, &record, hub)
 	hub.CaptureEvent(event)
 
 	return nil
