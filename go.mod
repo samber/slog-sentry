@@ -5,7 +5,6 @@ go 1.21
 require (
 	github.com/getsentry/sentry-go v0.22.0
 	github.com/samber/slog-common v0.17.0
-	go.uber.org/goleak v1.2.1
 )
 
 require (
