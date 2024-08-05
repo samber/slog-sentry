@@ -1,6 +1,8 @@
 package slogsentry
 
 import (
+	"encoding"
+	"fmt"
 	"net/http"
 
 	"log/slog"
@@ -46,63 +48,76 @@ func DefaultConverter(addSource bool, replaceAttr func(groups []string, a slog.A
 func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 	k := attr.Key
 	v := attr.Value
-	kind := attr.Value.Kind()
+	kind := v.Kind()
 
-	if k == "dist" && kind == slog.KindString {
+	switch {
+	case k == "dist" && kind == slog.KindString:
 		event.Dist = v.String()
-	} else if k == "environment" && kind == slog.KindString {
+	case k == "environment" && kind == slog.KindString:
 		event.Environment = v.String()
-	} else if k == "event_id" && kind == slog.KindString {
+	case k == "event_id" && kind == slog.KindString:
 		event.EventID = sentry.EventID(v.String())
-	} else if k == "platform" && kind == slog.KindString {
+	case k == "platform" && kind == slog.KindString:
 		event.Platform = v.String()
-	} else if k == "release" && kind == slog.KindString {
+	case k == "release" && kind == slog.KindString:
 		event.Release = v.String()
-	} else if k == "server_name" && kind == slog.KindString {
+	case k == "server_name" && kind == slog.KindString:
 		event.ServerName = v.String()
-	} else if attr.Key == "tags" && kind == slog.KindGroup {
+	case k == "tags" && kind == slog.KindGroup:
 		event.Tags = slogcommon.AttrsToString(v.Group()...)
-	} else if attr.Key == "transaction" && kind == slog.KindGroup {
+	case k == "transaction" && kind == slog.KindString:
 		event.Transaction = v.String()
-	} else if attr.Key == "user" && kind == slog.KindGroup {
+	case k == "user" && kind == slog.KindGroup:
 		data := slogcommon.AttrsToString(v.Group()...)
 
 		if id, ok := data["id"]; ok {
 			event.User.ID = id
 			delete(data, "id")
-		} else if email, ok := data["email"]; ok {
+		}
+		if email, ok := data["email"]; ok {
 			event.User.Email = email
 			delete(data, "email")
-		} else if ipAddress, ok := data["ip_address"]; ok {
+		}
+		if ipAddress, ok := data["ip_address"]; ok {
 			event.User.IPAddress = ipAddress
 			delete(data, "ip_address")
-		} else if username, ok := data["username"]; ok {
+		}
+		if username, ok := data["username"]; ok {
 			event.User.Username = username
 			delete(data, "username")
-		} else if name, ok := data["name"]; ok {
+		}
+		if name, ok := data["name"]; ok {
 			event.User.Name = name
 			delete(data, "name")
-		} else if segment, ok := data["segment"]; ok {
+		}
+		if segment, ok := data["segment"]; ok {
 			event.User.Segment = segment
 			delete(data, "segment")
 		}
 
 		event.User.Data = data
-	} else if attr.Key == "request" && kind == slog.KindAny {
-		if req, ok := attr.Value.Any().(http.Request); ok {
+	case k == "request" && kind == slog.KindAny:
+		if req, ok := v.Any().(http.Request); ok {
 			event.Request = sentry.NewRequest(&req)
-		} else if req, ok := attr.Value.Any().(*http.Request); ok {
+		} else if req, ok := v.Any().(*http.Request); ok {
 			event.Request = sentry.NewRequest(req)
 		} else {
-			event.User.Data["request"] = slogcommon.AnyValueToString(v)
+			if tm, ok := v.Any().(encoding.TextMarshaler); ok {
+				data, err := tm.MarshalText()
+				if err == nil {
+					event.User.Data["request"] = string(data)
+				} else {
+					event.User.Data["request"] = fmt.Sprintf("%v", v.Any())
+				}
+			}
 		}
-	} else if kind == slog.KindGroup {
-		event.Contexts[attr.Key] = slogcommon.AttrsToMap(attr.Value.Group()...)
-	} else {
+	case kind == slog.KindGroup:
+		event.Contexts[k] = slogcommon.AttrsToMap(v.Group()...)
+	default:
 		// "context" should not be added to underlying context layers (see slog.KindGroup case).
 		if _, ok := event.Contexts[ContextKey]; !ok {
 			event.Contexts[ContextKey] = make(map[string]any, 0)
 		}
-		event.Contexts[ContextKey][attr.Key] = attr.Value.Any()
+		event.Contexts[ContextKey][k] = v.Any()
 	}
 }
