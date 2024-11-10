@@ -6,7 +6,7 @@ require (
 	github.com/getsentry/sentry-go v0.22.0
 	github.com/samber/slog-common v0.17.0
 	github.com/stretchr/testify v1.8.2
-	go.uber.org/goleak v1.2.1
+	go.uber.org/goleak v1.3.0
 )
 
 require (
