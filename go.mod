@@ -3,7 +3,7 @@ module github.com/samber/slog-sentry/v2
 go 1.21
 
 require (
-	github.com/getsentry/sentry-go v0.29.1
+	github.com/getsentry/sentry-go v0.30.0
 	github.com/samber/slog-common v0.17.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/goleak v1.3.0
