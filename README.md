@@ -109,7 +109,12 @@ type Option struct {
     // ReplaceAttr is an optional function that allows for the modification or
     // replacement of attributes in the log record. This can be used to filter
     // or transform attributes before they are sent to Sentry.
-ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
+    ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
+
+    // BeforeSend is an optional function that allows for the modification of
+    // the Sentry event before it is sent to the server. This can be used to add
+    // additional context or modify the event payload.
+    BeforeSend func(event *sentry.Event) *sentry.Event
 }
 ```
 

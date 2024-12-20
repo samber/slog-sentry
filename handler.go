@@ -32,6 +32,11 @@ type Option struct {
 	// replacement of attributes in the log record. This can be used to filter
 	// or transform attributes before they are sent to Sentry.
 	ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
+
+	// BeforeSend is an optional function that allows for the modification of
+	// the Sentry event before it is sent to the server. This can be used to add
+	// additional context or modify the event payload.
+	BeforeSend func(event *sentry.Event) *sentry.Event
 }
 
 func (o Option) NewSentryHandler() slog.Handler {
@@ -76,6 +81,11 @@ func (h *SentryHandler) Handle(ctx context.Context, record slog.Record) error {
 
 	fromContext := slogcommon.ContextExtractor(ctx, h.option.AttrFromContext)
 	event := h.option.Converter(h.option.AddSource, h.option.ReplaceAttr, append(h.attrs, fromContext...), h.groups, &record, hub)
+
+	if h.option.BeforeSend != nil {
+		event = h.option.BeforeSend(event)
+	}
+
 	hub.CaptureEvent(event)
 
 	return nil
