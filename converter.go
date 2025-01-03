@@ -90,10 +90,6 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 			event.User.Name = name
 			delete(data, "name")
 		}
-		if segment, ok := data["segment"]; ok {
-			event.User.Segment = segment
-			delete(data, "segment")
-		}
 
 		event.User.Data = data
 	case k == "request" && kind == slog.KindAny:
