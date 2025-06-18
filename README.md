@@ -144,6 +144,7 @@ The following attributes are interpreted by `slogsentry.DefaultConverter`:
 | "user"           | group (see below) |                 |
 | "error"          | any               | `error`         |
 | "request"        | any               | `*http.Request` |
+| "fingerprint"    | any               | `[]string`      |
 | other attributes | *                 |                 |
 
 Other attributes will be injected in `context` Sentry field.

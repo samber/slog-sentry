@@ -107,6 +107,10 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 				}
 			}
 		}
+	case k == "fingerprint" && kind == slog.KindAny:
+		if fingerprint, ok := v.Any().([]string); ok {
+			event.Fingerprint = fingerprint
+		}
 	case kind == slog.KindGroup:
 		event.Contexts[k] = slogcommon.AttrsToMap(v.Group()...)
 	default:
