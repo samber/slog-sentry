@@ -86,7 +86,9 @@ func (h *SentryHandler) Handle(ctx context.Context, record slog.Record) error {
 		event = h.option.BeforeSend(event)
 	}
 
-	hub.CaptureEvent(event)
+	hub.CaptureEventWithHint(event, &sentry.EventHint{
+		Context: ctx,
+	})
 
 	return nil
 }
