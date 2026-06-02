@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/getsentry/sentry-go v0.45.0
-	github.com/samber/slog-common v0.21.0
+	github.com/samber/slog-common v0.22.0
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/goleak v1.3.0
 )
