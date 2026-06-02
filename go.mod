@@ -1,6 +1,6 @@
 module github.com/samber/slog-sentry/v2
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/getsentry/sentry-go v0.45.0
