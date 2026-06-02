@@ -74,7 +74,9 @@ func attrToSentryEvent(attr slog.Attr, event *sentry.Event) {
 	case k == "server_name" && kind == slog.KindString:
 		event.ServerName = v.String()
 	case k == "tags" && kind == slog.KindGroup:
-		event.Tags = slogcommon.AttrsToString(v.Group()...)
+		for tk, tv := range slogcommon.AttrsToString(v.Group()...) {
+			event.Tags[tk] = tv
+		}
 	case k == "transaction" && kind == slog.KindString:
 		event.Transaction = v.String()
 	case k == "user" && kind == slog.KindGroup:
